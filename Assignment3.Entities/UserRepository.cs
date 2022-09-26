@@ -10,9 +10,7 @@ public class UserRepository : IUserRepository
     }
     public (Response Response, int UserId) Create(UserCreateDTO user)
     {
-        // Check if user exists
-        var _user = _context.Users.Where(u => u.Email == user.Email);
-        if(_user != null) return (Response.Conflict,-1);
+        try{
         // Add new user to context
         _context.Users.Add(new User{
             Name = user.Name,
@@ -22,6 +20,8 @@ public class UserRepository : IUserRepository
         _context.SaveChanges();
         // return
         return (Response.Created,_context.Users.Where(u => user.Email == u.Email).First().Id);
+        } catch {return (Response.Conflict,-1);}
+
     }
 
     public Response Delete(int userId, bool force = false)
