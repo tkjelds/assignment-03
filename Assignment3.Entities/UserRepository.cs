@@ -29,24 +29,30 @@ public class UserRepository : IUserRepository
         // Check if force is used
         if(force != true) return Response.Conflict;
         // Check if user exists
+        try{
         var _user = _context.Users.Where(u => u.Id == userId).First();
-        if(_user == null) return (Response.Conflict);
         _context.Users.Remove(_user);
         _context.SaveChanges();
         return Response.Deleted;
+        } catch {
+            return (Response.Conflict);
+        }
     }
 
     public UserDTO Read(int userId)
     {
         // Check if user exists
+        try {
         var _user = _context.Users.Where(u => u.Id == userId).First();
-        if(_user == null) return null;
         return (new UserDTO(            
             _user.Id,
             _user.Name,
             _user.Email)
 
         );
+        } catch {
+            return null;
+        }
     }
 
     public IReadOnlyCollection<UserDTO> ReadAll()
@@ -61,13 +67,18 @@ public class UserRepository : IUserRepository
 
     public Response Update(UserUpdateDTO user)
     {
-        // Check if user exists
+        try 
+        {
         var _user = _context.Users.Where(u => u.Id == user.Id).First();
-        if(_user == null) return Response.Conflict;
         _user.Email = user.Email;
         _user.Name = user.Name;
         _context.Users.Update(_user);
         _context.SaveChanges();
         return Response.Updated;
+        } 
+        catch
+        {
+        return Response.Conflict;
+        }
     }
 }
