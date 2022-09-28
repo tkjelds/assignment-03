@@ -13,7 +13,7 @@ public class KanbanContext : DbContext
         DbPath = System.IO.Path.Join(path, "Kanban.db");
     }
     protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlite($"Data Source={DbPath}");
+        => options.UseSqlite($"Data Source={DbPath}").EnableSensitiveDataLogging();
 
     public DbSet<Tag> Tags { get; set; }
     public DbSet<Task> Tasks { get; set; }

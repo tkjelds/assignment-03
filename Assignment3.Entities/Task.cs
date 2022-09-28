@@ -19,4 +19,7 @@ namespace Assignment3.Entities;
     public State State { get; set; }
 
     public IEnumerable<Tag> Tags {get; set;}
+
+    public DateTime Created {get;set;}
+    public DateTime StateUpdated {get;set;}
     }
