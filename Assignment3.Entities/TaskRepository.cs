@@ -32,7 +32,7 @@ public class TaskRepository : ITaskRepository
             Title = task.Title,
             AssignedTo = user,
             Description = task.Description,
-            State = State.Active,
+            State = State.New,
             Tags = tags_,
             Created = DateTime.Now,
             StateUpdated = DateTime.Now
@@ -53,7 +53,7 @@ public class TaskRepository : ITaskRepository
             task.StateUpdated = DateTime.Now;
             _context.Update(task);
             _context.SaveChanges();
-            return Response.Deleted;
+            return Response.Updated;
         }
         if (task.State != State.New) return Response.Conflict;
         _context.Remove(task);
@@ -151,7 +151,6 @@ public class TaskRepository : ITaskRepository
     {
         // Check if user exists
         var user =  _context.Users.Where(u => u.Id == task.AssignedToId).FirstOrDefault();
-        if (user == null) return (Response.BadRequest);
         // Check if tags exist, if they dont, create them.
         var tagdict = _context.Tags.ToDictionary(t => t.Name, t => t.Id);
         List<Tag> tags_ = new List<Tag>();
