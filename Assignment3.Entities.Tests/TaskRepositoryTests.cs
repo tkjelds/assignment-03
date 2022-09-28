@@ -18,6 +18,21 @@ public class TaskRepositoryTests
         _context.Users.Remove(user);
         _context.SaveChanges();
         // Then
-        Assert.Equal(actual.Response,Response.Created);
+        Assert.Equal(Response.Created,actual.Response);
+    }
+
+    [Fact]
+    public void TaskCreateFailUserNotExist()
+    {
+        // Given
+        KanbanContext _context = new KanbanContext();
+        TaskRepository tr = new TaskRepository(_context);
+        _context.Tasks.RemoveRange(_context.Tasks);
+        // When
+        TaskCreateDTO tcd = new TaskCreateDTO("test",42,"test",new [] {"test","test2"});
+        var actual = tr.Create(tcd);
+        _context.SaveChanges();
+        // Then
+        Assert.Equal(Response.BadRequest,actual.Response);
     }
 }
