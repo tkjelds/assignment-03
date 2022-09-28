@@ -33,7 +33,9 @@ public class TaskRepository : ITaskRepository
             AssignedTo = user,
             Description = task.Description,
             State = State.Active,
-            Tags = tags_
+            Tags = tags_,
+            Created = DateTime.Now,
+            StateUpdated = DateTime.Now
         };
         // add task
         _context.Tasks.Add(tsk);
