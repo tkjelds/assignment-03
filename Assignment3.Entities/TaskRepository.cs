@@ -44,11 +44,16 @@ public class TaskRepository : ITaskRepository
     }
     public Response Delete(int taskId)
     {
+        // Check if task exists
         var task = _context.Tasks.Where(t => t.Id == taskId).FirstOrDefault();
-        if (task == null) return Response.BadRequest;
+        if (task == null) return Response.BadRequest; // return bad request if task does not exist
+        // If the task is active, set the state to 
         if(task.State == State.Active){
             task.State = State.Removed;
+            task.StateUpdated = DateTime.Now;
             _context.Update(task);
+            _context.SaveChanges();
+            return Response.Deleted;
         }
         if (task.State != State.New) return Response.Conflict;
         _context.Remove(task);
@@ -58,11 +63,18 @@ public class TaskRepository : ITaskRepository
 
     public TaskDetailsDTO Read(int taskId)
     {
-        // //Check if task exists
-        // var task = _context.Tasks.Where(t => t.Id == taskId).FirstOrDefault();
-        // if (task == null) return null;
-        // TaskDetailsDTO tdo = new TaskDetailsDTO(task.Id,task.Title,task.Description,)
-        throw new NotImplementedException();
+        //Check if task exists
+        var task = _context.Tasks.Where(t => t.Id == taskId).FirstOrDefault();
+        if (task == null) return null;
+        TaskDetailsDTO tdo = new TaskDetailsDTO(task.Id,
+                                                task.Title,
+                                                task.Description,
+                                                task.Created,
+                                                task.AssignedTo.Name,
+                                                task.Tags.Select(t => t.Name).ToList(),
+                                                task.State,
+                                                task.StateUpdated);
+        return tdo;
     }
 
     public IReadOnlyCollection<TaskDTO> ReadAll()
@@ -70,7 +82,11 @@ public class TaskRepository : ITaskRepository
         List<TaskDTO> tasks = new List<TaskDTO>();
         foreach (var Task in _context.Tasks)
         {
-            tasks.Add(new TaskDTO(Task.Id,Task.Title,Task.AssignedTo.Name,Task.Tags.Select(t => t.Name).ToList(),Task.State));
+            tasks.Add(new TaskDTO(Task.Id,
+                                  Task.Title,
+                                  Task.AssignedTo.Name,
+                                  Task.Tags.Select(t => t.Name).ToList(),
+                                  Task.State));
         }
         return tasks;
     }
@@ -80,7 +96,11 @@ public class TaskRepository : ITaskRepository
         List<TaskDTO> tasks = new List<TaskDTO>();
         foreach (var Task in _context.Tasks.Where(t => t.State == state))
         {
-            tasks.Add(new TaskDTO(Task.Id,Task.Title,Task.AssignedTo.Name,Task.Tags.Select(t => t.Name).ToList(),Task.State));
+            tasks.Add(new TaskDTO(Task.Id,
+                                  Task.Title,
+                                  Task.AssignedTo.Name,
+                                  Task.Tags.Select(t => t.Name).ToList(),
+                                  Task.State));
         }
         return tasks;
     }
@@ -90,7 +110,11 @@ public class TaskRepository : ITaskRepository
         List<TaskDTO> tasks = new List<TaskDTO>();
         foreach (var Task in _context.Tasks.Where(t => t.Tags.Select(t => t.Name).Contains(tag)))
         {
-            tasks.Add(new TaskDTO(Task.Id,Task.Title,Task.AssignedTo.Name,Task.Tags.Select(t => t.Name).ToList(),Task.State));
+            tasks.Add(new TaskDTO(Task.Id,
+                                  Task.Title,
+                                  Task.AssignedTo.Name,
+                                  Task.Tags.Select(t => t.Name).ToList(),
+                                  Task.State));
         }
         return tasks;
     }
@@ -100,7 +124,11 @@ public class TaskRepository : ITaskRepository
         List<TaskDTO> tasks = new List<TaskDTO>();
         foreach (var Task in _context.Tasks.Where(t => t.AssignedTo.Id == userId))
         {
-            tasks.Add(new TaskDTO(Task.Id,Task.Title,Task.AssignedTo.Name,Task.Tags.Select(t => t.Name).ToList(),Task.State));
+            tasks.Add(new TaskDTO(Task.Id,
+                                  Task.Title,
+                                  Task.AssignedTo.Name,
+                                  Task.Tags.Select(t => t.Name).ToList(),
+                                  Task.State));
         }
         throw new NotImplementedException();
     }
@@ -110,7 +138,11 @@ public class TaskRepository : ITaskRepository
         List<TaskDTO> tasks = new List<TaskDTO>();
         foreach (var Task in _context.Tasks.Where(t => t.State == State.Removed))
         {
-            tasks.Add(new TaskDTO(Task.Id,Task.Title,Task.AssignedTo.Name,Task.Tags.Select(t => t.Name).ToList(),Task.State));
+            tasks.Add(new TaskDTO(Task.Id,
+                                  Task.Title,
+                                  Task.AssignedTo.Name,
+                                  Task.Tags.Select(t => t.Name).ToList(),
+                                  Task.State));
         }
         throw new NotImplementedException();
     }
@@ -141,7 +173,8 @@ public class TaskRepository : ITaskRepository
             AssignedTo = user,
             Description = task.Description,
             Tags = tags_,
-            State = task.State
+            State = task.State,
+            StateUpdated = DateTime.Now
         };
         _context.Update(tsk);
         _context.SaveChanges();
